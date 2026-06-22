@@ -2,7 +2,8 @@ import { LoginDto } from './dto/login.dto';
 import { AuthService } from './auth.service';
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiHeader, ApiTags } from '@nestjs/swagger';
-import { ApplyVersionHeader } from 'src/common/decorators/apply-version-header.decorator';
+import { ApplyVersionHeader } from '../common/decorators/apply-version-header.decorator';
+
 
 @ApplyVersionHeader()
 @Controller('auth')

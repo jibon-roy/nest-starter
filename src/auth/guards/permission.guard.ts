@@ -1,7 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { CaslAbilityFactory, Subjects } from 'src/casl/casl-ability.factory';
+
 import { SUBJECT } from './permissions.decorator';
+import { CaslAbilityFactory, Subjects } from '../../casl/casl-ability.factory';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {

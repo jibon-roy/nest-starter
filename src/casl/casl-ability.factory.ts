@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import {
-  AbilityClass,
   AbilityBuilder,
-  PureAbility,
-  Subject,
+  AbilityClass,
+  createMongoAbility,
+  MongoAbility,
 } from '@casl/ability';
 import { Prisma } from '@prisma/client';
-import { UserDto } from 'src/users/entities/user.entity';
+import { UserDto } from '../users/entities/user.entity';
+
 
 export type Action = 'manage' | 'create' | 'read' | 'update' | 'delete';
 
 export type Subjects = Prisma.ModelName | 'all';
 
-export type AppAbility = PureAbility<[Action, Subjects]>;
+export type AppAbility = MongoAbility<[Action, Subjects]>;
 
 type PermissionAction = 'c' | 'r' | 'u' | 'd';
 
@@ -46,8 +47,8 @@ export class CaslAbilityFactory {
       can: allow,
       cannot: forbid,
       build,
-    } = new AbilityBuilder<PureAbility<[Action, Subjects]>>(
-      PureAbility as AbilityClass<AppAbility>,
+    } = new AbilityBuilder<MongoAbility<[Action, Subjects]>>(
+      createMongoAbility as unknown as AbilityClass<AppAbility>,
     );
 
     const permissions = user.permission;
@@ -58,7 +59,7 @@ export class CaslAbilityFactory {
     // Detect permissions from the user role
     for (const subject in permissions) {
       if (typeof permissions[subject] === 'string') {
-        for (const letter of permissions[subject] as PermissionAction[]) {
+        for (const letter of permissions[subject] as unknown as PermissionAction[]) {
           // Because currently some users have a boolean in their permissions
           allow(getAction(letter), subject as Subjects);
         }

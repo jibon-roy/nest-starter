@@ -1,13 +1,13 @@
-import helmet from 'helmet';
-import * as morgan from 'morgan';
-import * as cors from 'cors';
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { VersioningType } from '@nestjs/common';
-import * as basicAuth from 'express-basic-auth';
 import { Logger } from 'nestjs-pino';
-
+import helmet from 'helmet';
+import morgan from 'morgan';
+import cors from 'cors';
+import basicAuth from 'express-basic-auth';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     snapshot: true,

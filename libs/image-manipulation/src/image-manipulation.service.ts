@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import sharp = require('sharp');
+import sharp, { Sharp } from 'sharp';
 
 interface Options {
   reduceSize?: number;
@@ -11,22 +11,32 @@ interface Options {
 
 @Injectable()
 export class ImageManipulationService {
-  async toWebp(image: any): Promise<sharp.Sharp> {
-    return sharp(image, { failOn: 'none' }).toFormat('webp').webp();
+
+  /**
+   * Convert image to WebP format
+   */
+  async toWebp(image: any): Promise<Sharp> {
+    return sharp(image, { failOn: 'none' })
+      .toFormat('webp')
+      .webp();
   }
 
-  async toThumbnail(image: any, options?: Options): Promise<sharp.Sharp> {
+  /**
+   * Create thumbnail from image
+   */
+  async toThumbnail(image: any, options: Options = {}): Promise<Sharp> {
     const metaData = await sharp(image).metadata();
 
+    const width =
+      options.reduceSize && metaData.width
+        ? Math.floor(metaData.width * options.reduceSize)
+        : options.width ?? metaData.width;
+
     return sharp(image)
-      .resize(
-        options.reduceSize
-          ? Math.floor(metaData.width * options.reduceSize)
-          : options.width,
-      )
+      .resize(width)
       .toFormat('webp')
       .webp({
-        quality: options.quality || 100,
+        quality: options.quality ?? 100,
       });
   }
 }
