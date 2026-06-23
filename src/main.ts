@@ -1,4 +1,3 @@
-
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -10,6 +9,7 @@ import morgan from 'morgan';
 import cors from 'cors';
 import basicAuth from 'express-basic-auth';
 import { join } from 'path';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     snapshot: true,
@@ -42,11 +42,14 @@ async function bootstrap() {
 
   // Setup security headers
   app.use(helmet());
-
+  app.setGlobalPrefix('api');
   app.enableVersioning({
-    type: VersioningType.HEADER,
-    header: 'version',
+    type: VersioningType.URI,
     defaultVersion: '1',
+  });
+
+  app.useStaticAssets(join(process.cwd(), 'logs'), {
+    prefix: '/logs/',
   });
 
   if (process.env.NODE_ENV !== 'production') {
