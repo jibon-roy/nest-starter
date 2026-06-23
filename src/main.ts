@@ -21,7 +21,7 @@ async function bootstrap() {
 
   // Protect Swagger
   app.use(
-    '/docs*',
+    ['/docs', '/docs/{*path}'],
     basicAuth({
       challenge: true,
       users: {
