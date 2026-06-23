@@ -70,14 +70,14 @@ export class UploadsController {
 
     const webpImage = await this.imageManipulation.toWebp(image.buffer);
 
-    const data = await this.uploadService._uploadImagesToS3(
+    const data = await this.uploadService.uploadImageLocally(
       `${generatedUUID}`,
       await webpImage.toBuffer(),
       'image/webp',
     );
 
     return {
-      data: data.Location,
+      data: data.url,
     };
   }
 
@@ -88,7 +88,7 @@ export class UploadsController {
     @Res() res: Response,
   ) {
     const processedImage = await this.imageManipulation.toThumbnail(
-      processImageDto.image,
+      this.uploadService.resolveImageSource(processImageDto.image),
       {
         quality: processImageDto.q,
         width: processImageDto.w,

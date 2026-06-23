@@ -3,13 +3,15 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { VersioningType } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { Logger } from 'nestjs-pino';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cors from 'cors';
 import basicAuth from 'express-basic-auth';
+import { join } from 'path';
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     snapshot: true,
     bufferLogs: true,
   });
@@ -30,6 +32,10 @@ async function bootstrap() {
 
   // Setup logging
   app.use(morgan('dev'));
+
+  app.useStaticAssets(join(process.cwd(), process.env.UPLOAD_DIR || 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   // Setup cors
   app.use(cors());

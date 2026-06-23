@@ -1,36 +1,66 @@
 import { Injectable } from '@nestjs/common';
-import aws = require('aws-sdk');
+import { mkdir, writeFile } from 'fs/promises';
+import { basename, join, resolve } from 'path';
 
-const spacesEndpoint = new aws.Endpoint(process.env.SPACES_ENDPOINT);
-const s3 = new aws.S3({
-  endpoint: spacesEndpoint,
-  region: 'tareky',
-  credentials: {
-    accessKeyId: process.env.SPACES_KEY,
-    secretAccessKey: process.env.SPACES_SECRET,
-  },
-});
+type LocalUploadResult = {
+  filename: string;
+  path: string;
+  url: string;
+  contentType: string;
+};
 
 @Injectable()
 export class UploadsService {
+  private readonly uploadRoot = resolve(
+    process.cwd(),
+    process.env.UPLOAD_DIR || 'uploads',
+  );
+  private readonly imageUploadDir = join(this.uploadRoot, 'images');
+
   /**
    *
    * @param image
    * @returns Promise
    */
-  _uploadImagesToS3 = async (
+  async uploadImageLocally(
     imageKey: string,
     imageBuffer: Buffer,
     contentType: string,
-  ) => {
-    const options = {
-      Key: imageKey,
-      Body: imageBuffer,
-      Bucket: process.env.SPACES_BUCKET_NAME,
-      ACL: 'public-read',
-      ContentType: contentType,
-    };
+  ): Promise<LocalUploadResult> {
+    await mkdir(this.imageUploadDir, { recursive: true });
 
-    return s3.upload(options).promise();
-  };
+    const filename = `${this.sanitizeFilename(imageKey)}.webp`;
+    const filePath = join(this.imageUploadDir, filename);
+
+    await writeFile(filePath, imageBuffer);
+
+    return {
+      filename,
+      path: filePath,
+      url: `/uploads/images/${filename}`,
+      contentType,
+    };
+  }
+
+  resolveImageSource(image: string): string {
+    const pathname = this.getPathname(image);
+
+    if (!pathname.startsWith('/uploads/images/')) {
+      return image;
+    }
+
+    return join(this.imageUploadDir, basename(decodeURIComponent(pathname)));
+  }
+
+  private getPathname(image: string): string {
+    try {
+      return new URL(image, 'http://localhost').pathname;
+    } catch {
+      return image;
+    }
+  }
+
+  private sanitizeFilename(filename: string): string {
+    return filename.replace(/[^a-zA-Z0-9_-]/g, '');
+  }
 }
